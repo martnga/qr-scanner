@@ -13,6 +13,7 @@ import android.view.SurfaceView;
 import android.widget.TextView;
 
 import com.google.android.gms.vision.CameraSource;
+import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
@@ -78,6 +79,28 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         SparseArray<Barcode> barcodes = barcodeDetector.detect(myFrame);*/
+
+        barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
+            @Override
+            public void release() {
+            }
+
+            @Override
+            public void receiveDetections(Detector.Detections<Barcode> detections) {
+
+                final SparseArray<Barcode> barcodes = detections.getDetectedItems();
+
+                if (barcodes.size() != 0) {
+                    barcodeInfo.post(new Runnable() {    // Use the post method of the TextView
+                        public void run() {
+                            barcodeInfo.setText(    // Update the TextView
+                                    barcodes.valueAt(0).displayValue
+                            );
+                        }
+                    });
+            }
+            }
+        });
 
 
     }
