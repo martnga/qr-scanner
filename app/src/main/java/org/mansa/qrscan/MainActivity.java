@@ -8,37 +8,78 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.widget.TextView;
 
+import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
     Bitmap myQRCode;
+    SurfaceView cameraView;
+    TextView barcodeInfo;
+    CameraSource cameraSource;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            myQRCode = BitmapFactory.decodeStream(
-                    getAssets().open("myqrcode.jpg"));
+        cameraView = (SurfaceView)findViewById(R.id.camera_view);
+        barcodeInfo = (TextView)findViewById(R.id.code_info);
 
-        }catch (Exception e) {
-
-        }
+//        try {
+//            myQRCode = BitmapFactory.decodeStream(
+//                    getAssets().open("myqrcode.jpg"));
+//
+//        }catch (Exception e) {
+//
+//        }
 
         BarcodeDetector barcodeDetector =
                 new BarcodeDetector.Builder(this)
                         .setBarcodeFormats(Barcode.QR_CODE)
                         .build();
 
-        Frame myFrame = new Frame.Builder()
+        cameraSource = new CameraSource
+                .Builder(this, barcodeDetector)
+                .setRequestedPreviewSize(640, 480)
+                .build();
+
+        cameraView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                try {
+                    cameraSource.start(cameraView.getHolder());
+                } catch (IOException ie) {
+                    Log.e("CAMERA SOURCE", ie.getMessage());
+                }
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                cameraSource.stop();
+            }
+        });
+
+
+        /*Frame myFrame = new Frame.Builder()
                 .setBitmap(myQRCode)
                 .build();
 
-        SparseArray<Barcode> barcodes = barcodeDetector.detect(myFrame);
+        SparseArray<Barcode> barcodes = barcodeDetector.detect(myFrame);*/
+
+
     }
 
     @Override
